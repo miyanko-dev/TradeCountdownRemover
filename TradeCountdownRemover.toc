@@ -1,0 +1,8 @@
+## Interface: 11509, 20506, 30405, 40402, 50504
+## Title: Trade Countdown Remover
+## Notes: Re-clicks the Trade button three times so the trade countdown gets skipped.
+## Author: Marco Vrinssen
+## Version: 1.0.0
+## IconTexture: Interface\Icons\INV_Misc_Coin_01
+
+TradeCountdownRemover.lua
