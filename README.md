@@ -1,27 +1,32 @@
 # TradeCountdownRemover
 
-Skips the trade countdown. When you press **Trade**, the addon presses it again three times
-in quick succession, so the trade goes through without the wait.
+Skips the three second countdown on the trade confirmation dialog. Press **Trade** once and the Accept button is immediately clickable.
 
 ## Features
 
-- Hooks the native Trade button, no extra UI and no configuration
-- Replays the click 3 times at 0.15s steps after your own click
-- Guarded so the replayed clicks never trigger another replay round
-- Works on Classic Era, Anniversary, Wrath, Cata and Mists from one `.toc`
+- Press Trade once, nothing else to do
+- Covers macro and keybind accepts as well as the Trade button
+- No UI, no configuration, no saved variables
+- Leaves the mail confirmation alone, so gold sent to a stranger keeps its warning
+- Disables itself on any client without the secure confirmation dialog
 
 ## Installation
 
-1. Copy the `TradeCountdownRemover/` folder into:
-   `World of Warcraft/_classic_era_/Interface/AddOns/`
+1. Copy the `TradeCountdownRemover/` folder into the `Interface/AddOns/` folder of your client: `_classic_era_` for Classic Era, `_classic_beta_` for the WoW Forever beta.
 2. Restart the game or `/reload`.
 3. Enable **Trade Countdown Remover** in the AddOns list.
 
-## Usage
+## Requirements
 
-Open a trade and press **Trade** once. Nothing else to do.
+One folder and one `.toc` run on both clients:
 
-## Notes
+| Client | Interface |
+| --- | --- |
+| Classic Era 1.15.x | `11509` |
+| WoW Forever 1.60.x | `16001` |
 
-Replaces the `TRADE_SHOW` WeakAura that did the same thing. Disable that aura when you install
-this addon, otherwise both fire and the button gets clicked six times.
+Not yet tested in game on either client.
+
+## Restrictions
+
+If you used the `TRADE_SHOW` WeakAura that did the same thing, disable it. Otherwise both fire against the same dialog.
