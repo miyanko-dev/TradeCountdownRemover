@@ -1,6 +1,6 @@
 # TradeCountdownRemover — Memory
 
-Updated 2026-09-25 after the dual-client port (decision: every addon in the folder supports both clients). Verified against Gethe `forever` @ `bd2470a` (1.60.1.70009), Gethe `classic_era` @ `33e177d` (1.15.9.69722) and the matching Ketho dumps. Nothing has run in a client.
+Updated 2026-09-30 after the Forever-only audit. The owner's decision now is WoW Forever 1.60.x only: `main` drops everything that exists only for Classic, and a `1.15.x-backup` branch keeps the Classic version. This supersedes the 2026-09-25 decision that every addon supports both clients. The audit verified against Gethe `forever` @ `966519cf` (1.60.1.70124) and Ketho `forever` @ `4149af64` (1.60.1.70009). The installed client is 1.60.1.70009. Nothing has run in a client yet.
 
 ## Current state
 
@@ -8,37 +8,40 @@ Skips the three-second countdown on the trade confirmation dialog. No UI, no sav
 
 | Item | State |
 |---|---|
-| Working tree | 1.2.0, both clients from one toc, `## Interface: 11509, 16001`, `## Author: miyanko`. `_Vanilla.toc` is removed, because one toc now serves both |
-| Git | Committed and pushed on 2026-09-25: `main` = `origin/main`. GitHub's README restructure was merged with the local README and toc kept. The previous release is 1.0.0 at `b547903`, a flat file that replays the Trade click |
+| Working tree | 2.0.0, Forever only: `## Interface: 16001`, `## Category: Social`, one file `Core/Unlock.lua` |
+| Git | `main` holds 2.0.0 (committed 2026-09-30, not pushed). `1.15.x-backup` = `d7f8c50` (dual-client 1.2.0, the last commit that supports 1.15.x) is on GitHub. Older Classic builds sit in its history: 1.0.0 at `b547903` replays the Trade click |
 
 How it works:
 
-- `SecureTransferDialog` is forbidden to addons.
-- On `SECURE_TRANSFER_CONFIRM_TRADE_ACCEPT`, the addon calls `AcceptTrade()` once more on the next frame. The re-raised `SecureTransferDialog_Show` re-enables Button1, and the frame is already visible, so no second timer starts.
+- `SecureTransferDialog` is forbidden to addons (`<ScopedModifier forbidden="true">` in `Blizzard_SecureTransferUI.xml`).
+- On `SECURE_TRANSFER_CONFIRM_TRADE_ACCEPT`, the addon calls `AcceptTrade()` once more on the next frame. The re-raised `SecureTransferDialog_Show` ends in `Button1:Enable()` and a `Show()` that doesn't fire OnShow on a visible frame, so no second timer starts. Verified on Forever: `Blizzard_SecureTransferUI.lua`, with `CONFIRM_TRADE.onShow = SecureTransferDialog_TimerOnAccept`.
 - It sends at most 2 re-requests per press. `TRADE_ACCEPT_UPDATE(1)` and `SECURE_TRANSFER_CANCEL` stop it.
 
-There are no client branches:
+Verified on Forever: all five events are in `Events.lua`, `AcceptTrade` is in `GlobalAPI.lua`, and `TRADE_ACCEPT_UPDATE.playerAccepted` is a `number` (`TradeInfoDocumentation.lua`), so the `== 1` test is correct.
 
-- `Blizzard_SecureTransferUI.lua` and `.xml` are byte-identical on both clients.
-- The events and `AcceptTrade` exist on both.
-- `Core/Compat.lua` does feature tests only.
+## Forever-only rework (done 2026-09-30)
+
+- TCR-1: `## Interface: 16001` only, version 2.0.0, `## Category: Social`.
+- TCR-2: `Core/Compat.lua` is deleted. `Unlock.lua` registers both events directly; they and `AcceptTrade` always exist on Forever.
+- TCR-3: the README is Forever only.
+- TCR-4: `1.15.x-backup` was created at `d7f8c50` and pushed.
+
+Nothing else was needed: the event gating, the re-request cap and window, and the deferred send are unchanged. The addon has no UI panel.
 
 ## Blockers, issues, challenges
 
-1. The mechanism is unproven on any client: does a second `AcceptTrade()` raise the confirmation again? If it doesn't, the addon quietly does nothing.
-2. `AcceptTrade` has no restriction annotation, so calling it from a `C_Timer` callback without a hardware event is convention, not proof. By contrast, `C_SecureTransfer.AcceptTrade` is `HasRestrictions = true`.
-3. The multi-value `## Interface: 11509, 16001` line is proven only by third-party addons (Auctionator, QuestieDB), not by the UI source.
-4. There's no `_classic_era_` install. The installed beta is 69913, the source is 70009. A test needs a second character.
-5. Known Blizzard behaviour: the old ticker keeps rewriting the label (`2`, `1`, `ACCEPT`), but the button stays clickable. Mail's stranger countdown is left alone on purpose.
+1. The mechanism is unproven in a client: does a second `AcceptTrade()` raise the confirmation again? If it doesn't, the addon quietly does nothing.
+2. `AcceptTrade` has no restriction annotation, so calling it from a `C_Timer` callback without a hardware event is convention, not proof. By contrast, `C_SecureTransfer.AcceptTrade` is `HasRestrictions = true` (`SecureTransferDocumentation.lua`).
+3. Known Blizzard behaviour: the old ticker keeps rewriting the label (`2`, `1`, `ACCEPT`), but the button stays clickable. Mail's stranger countdown is left alone on purpose.
 
 ## Next steps
 
-1. Run `/console scriptErrors 1` first on both clients.
+1. Review and push `main` (2.0.0).
+2. Run `/console scriptErrors 1` first in game.
 
-Both clients:
+Forever checks:
 
-- [ ] The addon list shows 1.2.0 and not out of date. This proves the dual Interface line.
-- [ ] `/dump C_EventUtils.IsEventValid("SECURE_TRANSFER_CONFIRM_TRADE_ACCEPT"), type(AcceptTrade)` prints `true function`.
+- [ ] The addon list shows it, not out of date.
 - [ ] Open a trade, add an item and press **Trade** once: **Accept** is clickable at once. This settles issue 1.
 - [ ] Log the events with a temporary frame. Two or more confirm events per press mean the mechanism works.
 - [ ] No `ADDON_ACTION_BLOCKED` or `ADDON_ACTION_FORBIDDEN` for the addon. This settles issue 2.

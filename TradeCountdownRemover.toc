@@ -1,9 +1,9 @@
-## Interface: 11509, 16001
+## Interface: 16001
 ## Title: Trade Countdown Remover
 ## Notes: Re-requests the trade confirmation so the three second Accept countdown is skipped.
 ## Author: miyanko
-## Version: 1.2.0
+## Version: 2.0.0
+## Category: Social
 ## IconTexture: Interface\Icons\INV_Misc_Coin_01
 
-Core\Compat.lua
 Core\Unlock.lua

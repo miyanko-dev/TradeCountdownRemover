@@ -1,8 +1,5 @@
-local _, ns = ...
-
-local compat = ns.compat
-
-if not compat.hasConfirmDialog or not compat.canRequestAccept then return end
+local CONFIRM_EVENT = "SECURE_TRANSFER_CONFIRM_TRADE_ACCEPT"
+local CANCEL_EVENT = "SECURE_TRANSFER_CANCEL"
 
 -- One re-request already clears the countdown; the second only covers a re-raise the
 -- client chose to drop. The cap is what terminates the sequence, because every accept
@@ -48,7 +45,7 @@ local function requestConfirmAgain()
 end
 
 local function onEvent(_, event, playerAccepted)
-    if event == compat.confirmEvent then
+    if event == CONFIRM_EVENT then
         requestConfirmAgain()
     elseif event == "TRADE_ACCEPT_UPDATE" then
         -- The accept is committed, so a further request would only reopen a dialog for
@@ -56,7 +53,7 @@ local function onEvent(_, event, playerAccepted)
         if playerAccepted == 1 then
             requestsMade = MAX_REQUESTS
         end
-    elseif event == compat.cancelEvent then
+    elseif event == CANCEL_EVENT then
         requestsMade = MAX_REQUESTS
     elseif event == "TRADE_SHOW" then
         tradeOpen = true
@@ -72,12 +69,8 @@ listener:RegisterEvent("TRADE_CLOSED")
 listener:RegisterEvent("TRADE_ACCEPT_UPDATE")
 
 -- Catching the confirmation rather than the Trade button covers macro and keybind
--- accepts too, and keeps TradeFrameTradeButton out of the addon entirely; that frame is
--- the one part of the trade UI Blizzard builds from a different file per flavor.
-listener:RegisterEvent(compat.confirmEvent)
-
-if compat.hasCancelEvent then
-    listener:RegisterEvent(compat.cancelEvent)
-end
+-- accepts too, and keeps TradeFrameTradeButton out of the addon entirely.
+listener:RegisterEvent(CONFIRM_EVENT)
+listener:RegisterEvent(CANCEL_EVENT)
 
 listener:SetScript("OnEvent", onEvent)
